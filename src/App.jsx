@@ -7,6 +7,7 @@ import ChartsPanel from './components/ChartsPanel.jsx'
 import Sandbox from './components/Sandbox.jsx'
 import ArchitectureMap from './components/ArchitectureMap.jsx'
 import BuildPlan from './components/BuildPlan.jsx'
+import FrontendUpgrade from './components/FrontendUpgrade.jsx'
 import WaterBackground from './components/WaterBackground.jsx'
 import { ToastProvider } from './components/ToastProvider.jsx'
 import RippleButton from './components/RippleButton.jsx'
@@ -19,6 +20,7 @@ const TABS = [
   { id: 'flow', label: '🔧 Project Flow' },
   { id: 'architecture', label: '🏗️ Architecture' },
   { id: 'plan', label: '🔨 Build Plan' },
+  { id: 'frontend', label: '🎨 Frontend Upgrade' },
   { id: 'sandbox', label: '🧪 Sandbox' },
   { id: 'charts', label: '📊 Flow Diagram' }
 ]
@@ -159,6 +161,8 @@ function Shell() {
       {tab === 'architecture' && <ArchitectureMap />}
 
       {tab === 'plan' && <BuildPlan />}
+
+      {tab === 'frontend' && <FrontendUpgrade />}
 
       {tab === 'sandbox' && <Sandbox />}
 
