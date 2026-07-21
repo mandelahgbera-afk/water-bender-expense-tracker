@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Expense Tracker{% endblock %}
+
+{% block content %}
+
+    <!-- ===================== SUMMARY CARDS ===================== -->
+    <section class="summary-cards">
+        <div class="card income-card">
+            <h3>Total Income</h3>
+            <p class="amount">₦{{ "%.2f"|format(summary.income) }}</p>
+        </div>
+        <div class="card expense-card">
+            <h3>Total Expense</h3>
+            <p class="amount">₦{{ "%.2f"|format(summary.expense) }}</p>
+        </div>
+        <div class="card balance-card {{ 'negative' if summary.balance < 0 else '' }}">
+            <h3>Balance</h3>
+            <p class="amount">₦{{ "%.2f"|format(summary.balance) }}</p>
+        </div>
+    </section>
+
+    <p class="month-label">Showing budget summary for month: <strong>{{ month }}</strong></p>
+
+    <!-- ===================== BUDGET PROGRESS ===================== -->
+    <section class="panel">
+        <h2>Budget Progress</h2>
+
+        {% if budget_progress %}
+            {% for b in budget_progress %}
+            <div class="budget-item">
+                <div class="budget-header">
+                    <span class="category-name">{{ b.category }}</span>
+                    <span class="budget-figures">
+                        ₦{{ "%.2f"|format(b.spent) }} / ₦{{ "%.2f"|format(b.limit) }}
+                        {% if b.over_budget %}
+                            <span class="badge badge-danger">Over Budget</span>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill {{ 'over' if b.over_budget else '' }}"
+                         style="width: {{ b.percent }}%;"></div>
+                </div>
+                <form method="POST" action="{{ url_for('delete_budget', category=b.category) }}" class="inline-form">
+                    <button type="submit" class="link-btn">Remove budget</button>
+                </form>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="empty-state">No budgets set yet. Add one below.</p>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('set_budget') }}" class="form-row">
+            <input type="text" name="category" placeholder="Category (e.g. Food)" required list="category-list">
+            <input type="number" name="monthly_limit" placeholder="Monthly limit (₦)" step="0.01" min="0" required>
+            <button type="submit" class="btn btn-primary">Set Budget</button>
+        </form>
+    </section>
+
+    <!-- ===================== ADD TRANSACTION ===================== -->
+    <section class="panel">
+        <h2>Add Transaction</h2>
+        <form method="POST" action="{{ url_for('add_transaction') }}" class="form-grid">
+            <select name="type" required>
+                <option value="expense">Expense</option>
+                <option value="income">Income</option>
+            </select>
+            <input type="text" name="category" placeholder="Category" required list="category-list">
+            <input type="number" name="amount" placeholder="Amount (₦)" step="0.01" min="0.01" required>
+            <input type="date" name="date" required>
+            <input type="text" name="note" placeholder="Note (optional)">
+            <button type="submit" class="btn btn-primary">Add</button>
+        </form>
+
+        <datalist id="category-list">
+            {% for c in categories %}
+                <option value="{{ c }}">
+            {% endfor %}
+        </datalist>
+    </section>
+
+    <!-- ===================== FILTER ===================== -->
+    <section class="panel">
+        <h2>Filter Transactions</h2>
+        <form method="GET" action="{{ url_for('dashboard') }}" class="form-row">
+            <select name="category">
+                <option value="">All Categories</option>
+                {% for c in categories %}
+                    <option value="{{ c }}" {{ 'selected' if c == selected_category else '' }}>{{ c }}</option>
+                {% endfor %}
+            </select>
+            <input type="date" name="start_date" value="{{ start_date or '' }}" placeholder="From">
+            <input type="date" name="end_date" value="{{ end_date or '' }}" placeholder="To">
+            <button type="submit" class="btn btn-secondary">Filter</button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-clear">Clear</a>
+        </form>
+    </section>
+
+    <!-- ===================== TRANSACTIONS TABLE ===================== -->
+    <section class="panel">
+        <h2>Transactions</h2>
+        {% if transactions %}
+        <table class="tx-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Note</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr class="{{ t.type }}">
+                    <td>{{ t.date }}</td>
+                    <td><span class="badge {{ 'badge-income' if t.type == 'income' else 'badge-expense' }}">{{ t.type }}</span></td>
+                    <td>{{ t.category }}</td>
+                    <td>₦{{ "%.2f"|format(t.amount) }}</td>
+                    <td>{{ t.note or "—" }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('delete_transaction', transaction_id=t.id) }}" class="inline-form">
+                            <button type="submit" class="link-btn danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="empty-state">No transactions found.</p>
+        {% endif %}
+    </section>
+
+{% endblock %}

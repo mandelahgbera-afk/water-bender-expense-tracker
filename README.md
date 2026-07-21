@@ -27,21 +27,25 @@ Stack: **Vite + React 18 + Recharts** (pure CSS, no Tailwind build step, no UI k
 - **Micro-interactions** — `RippleButton.jsx` (water-ripple on click),
   `ToastProvider.jsx` (global feedback toast), cursor-follow glow on concept cards.
 - **Component states & substates**
-  - Concept card: `new` → `active` (expanded) → `learned` (mastered), shown via state dots.
-  - Flow step: `todo` → `current` → `done`, with animated pipe connectors.
-- **Progress tracking** — live bars for concepts mastered and pipeline stages built.
+  - Concept card: `new → active (expanded) → learned` (mastered), shown via state dots.
+  - Flow step: `todo → current → done`, with animated pipe connectors.
+- **Progress tracking** — live bars for concepts mastered, pipeline stages built, and architecture phases reviewed.
 - **Practical Sandbox** — `Sandbox.jsx` gives safe, execution-free "try-it" exercises
-  that validate the *shape* of the learner's Python (e.g. `balance = 1000.0`).
+  that validate the *shape* of the learner's Python.
 - **Live mini-demos** — each flow stage can "Run live mini-demo" to simulate its fields.
+- **Real Python code** — every flow stage now shows concrete, copyable Python code
+  aligned with the actual project file structure.
 
 ---
 
-## The Four Views (Tabs)
+## The Six Views (Tabs)
 
 | Tab | What it teaches | Interactions |
 |---|---|---|
 | **💧 Concepts** | 17 micro-teaching cards, one per concept | Filter, expand, cursor-glow, **learned** substate, in-card quiz |
-| **🔧 Project Flow** | 10 process components building the tracker | Stage states (todo/current/done), live mini-demo, copy |
+| **🔧 Project Flow** | 10 process components building the tracker | Stage states, concrete Python code, live mini-demo, copy |
+| **🏗️ Architecture** | Real Python project file tree | Click to explore files, see concepts per module |
+| **🔨 Build Plan** | 5-phase implementation roadmap | Expand phases, milestones, key files, concept mapping |
 | **🧪 Sandbox** | Practical "try-it" exercises | Safe expression checker, run/next, per-exercise pass state |
 | **📊 Flow Diagram** | Real charts from sample reservoirs | Hover tooltips, animated render |
 
@@ -52,60 +56,59 @@ Stack: **Vite + React 18 + Recharts** (pure CSS, no Tailwind build step, no UI k
 ### `ConceptCard` — Micro-Teaching Unit
 Located: `src/components/ConceptCard.jsx`
 Shows, for **one Python concept**:
-- **Icon + title** (e.g. Variables)
-- **Analogy tag** (e.g. "Labeled Barrels")
-- **Blurb** — plain-English water explanation
-- **Code block** — copyable Python snippet
-- **"In the project"** line tying it to the Expense Tracker
-
-Fields rendered per card: `icon`, `title`, `analogy`, `blurb`, `code`, `project`.
+- Icon + title + analogy tag
+- Blurb + code block + project tie-in
+- In-card quiz with correct/wrong micro-interactions
+- Substate: `new → active → learned`
 
 ### `FlowStep` — Process Component
 Located: `src/components/FlowStep.jsx`
 Represents **one stage** of the project pipeline. Contains:
-- **Step number + title**
-- **Analogy tag** (e.g. "Forked Pipes + Recirculating Pumps")
-- **Summary** — what the stage does
-- **Fields / Valves** list — each field has:
-  - `name` (e.g. `amount`)
-  - `type` (colored tag: `float`, `string`, `date`, `dict-key`, `file`, `json`, `cli`, `computed`…)
-  - `note` (what the valve does)
-- **Concept chips** — links back to the micro-teaching concepts used
-- **Stage pseudo-code block** — copyable
+- Step number, title, analogy tag, summary
+- **Fields / Valves** (name, colored type, note)
+- Concept chips
+- **Concrete Python code block** — copyable, from `src/data/flow.js`
+- Stage pseudo-code copy + live mini-demo + advance button
+
+### `ArchitectureMap` — Project Blueprint
+Located: `src/components/ArchitectureMap.jsx`
+Interactive file tree of the actual Python project:
+- Grouped by package (`auth/`, `transactions/`, `database/`, etc.)
+- Each file shows: purpose, icon, color, linked Python concepts
+- Click to expand and reveal concept tags
+- Filter by file name or purpose
+
+### `BuildPlan` — Phased Roadmap
+Located: `src/components/BuildPlan.jsx`
+Five build phases, each with:
+- Milestones (bulleted)
+- Key files (modules to create)
+- Python concepts touched (chip tags)
+- Expand/collapse with water-themed animations
 
 ### `CodeBlock` — Clipboard Pipe
 Located: `src/components/CodeBlock.jsx`
-Renders a Python snippet inside a "pipe cross-section" with a **⧉ Copy** button
-that writes to the system clipboard (`useClipboard` hook, `src/hooks/useClipboard.js`)
-and shows a transient "✓ Copied" confirmation.
+Renders a Python snippet with a copy button and toast feedback.
 
 ### `ChartsPanel` — Live Flow Diagram
 Located: `src/components/ChartsPanel.jsx`
-Three Recharts visuals: category **Pie**, monthly **Bar**, income-vs-expense **Line**.
+Three Recharts visuals: Pie (category), Bar (monthly), Line (income vs expense).
 
 ### `App` — Shell
 Located: `src/App.jsx`
-Holds the tab state, a concept **filter search box**, and lays out the flow with
-connecting **pipe-lines** between stages.
+Root orchestrator. State slices: `tab`, `search`, `conceptStates`, `flowDone`, `flowCurrent`, `phasesOpen`.
+Renders 6 tab views. Three progress bars at the top.
 
 ---
 
-## The Project Flow (Process Stages)
+## Data Modules
 
-1. **Installation** — Lay the Main Pipe *(Pipeline Engineering)*
-2. **Registration & Login** — Tagged Valve Panel + Blockage Sensors
-3. **Add Income** — Pump Station → Central Reservoir
-4. **Add / Edit / Delete Expenses** — Forked Pipes + Recirculating Pumps
-5. **View & Search History** — Conveyor Belt Inspection
-6. **Set Budget & Remaining** — Pressure Gauge Reading
-7. **Monthly Report + Export/Import** — Reservoir Vaults + Universal Coupling
-8. **Live Rates & Currency Convert** — Public Water Exchange
-9. **Visualize** — Mapping the Flow
-10. **Logging, Backup & CLI** — Self-Running Pumps + Manual Levers
-
-Each stage's `fields` (name / type / note) live in `src/data/flow.js`.
-The 17 concept definitions (title / analogy / blurb / code / project) live in
-`src/data/concepts.js`.
+| File | Purpose |
+|---|---|
+| `src/data/concepts.js` | 17 Python concept definitions with analogies, code, quizzes |
+| `src/data/flow.js` | 10 pipeline stage definitions with concrete Python code |
+| `src/data/projectBlueprint.js` | 25-file Python project architecture with purposes |
+| `src/data/buildPlan.js` | 5-phase implementation plan with milestones, files, concepts |
 
 ---
 
@@ -116,13 +119,12 @@ Lists · Dictionaries · File Handling · Exception Handling · JSON · Networki
 REST API · Database Connectivity · Data Visualization · Automation ·
 Command Line Arguments
 
-Each is mapped to its water analogy in both the `.md` guide and the webapp.
-
 ---
 
-## Next Steps (for the learner)
+## Next Steps
 
 1. Read `WATER_BENDER_PYTHON_GUIDE.md`.
-2. In the webapp, open **💧 Python Concepts**, filter, and copy snippets to try locally.
-3. Walk **🔧 Project Flow** stage-by-stage; copy each stage's pseudo-code.
-4. Implement the real Python Expense Tracker (SQLite + requests + matplotlib) using these stages as your blueprint.
+2. In the webapp, explore **🏗️ Architecture** to see the real file layout.
+3. Walk **🔧 Project Flow** stage-by-stage; copy concrete Python code.
+4. Use **🔨 Build Plan** as your implementation roadmap.
+5. Implement the real Python Expense Tracker (SQLite + requests + matplotlib).

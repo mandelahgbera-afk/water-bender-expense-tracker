@@ -22,7 +22,7 @@ function FieldRow({ field }) {
   )
 }
 
-// FlowStep: process component with states (todo / current / done) + a live mini-demo.
+// FlowStep: process component with states (todo / current / done) + live mini-demo.
 export default function FlowStep({ step, conceptsById, status, onAdvance }) {
   const { copy } = useClipboard()
   const toast = useToast()
@@ -31,7 +31,6 @@ export default function FlowStep({ step, conceptsById, status, onAdvance }) {
   const pseudo = `# ${step.title}\n# (${step.analogy})\n` +
     step.fields.map(f => `${f.name} = <${f.type}>  # ${f.note}`).join('\n')
 
-  // small live simulation per stage using the step's field names
   function runDemo() {
     const names = step.fields.map(f => f.name)
     const sample = {
@@ -75,6 +74,18 @@ export default function FlowStep({ step, conceptsById, status, onAdvance }) {
           </span>
         ))}
       </div>
+
+      {step.code && (
+        <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
+          <div className="code-head">
+            <span className="tag"><span className="water-ico">🐍</span> {step.id}.py — real code</span>
+            <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => copy(step.code)}>
+              ⧉ Copy
+            </button>
+          </div>
+          <pre className="code"><code>{step.code}</code></pre>
+        </div>
+      )}
 
       <div className="row" style={{ gap: 8 }}>
         <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: 12 }}

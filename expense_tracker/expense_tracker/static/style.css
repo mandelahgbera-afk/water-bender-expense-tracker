@@ -1,0 +1,272 @@
+/* ===================== Base ===================== */
+:root {
+    --green: #1a7f4e;
+    --green-light: #e6f6ee;
+    --red: #c0392b;
+    --red-light: #fdecea;
+    --blue: #2563eb;
+    --gray-bg: #f5f6f8;
+    --border: #e2e5ea;
+    --text-dark: #1f2430;
+    --text-muted: #6b7280;
+    --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--gray-bg);
+    color: var(--text-dark);
+}
+
+.topbar {
+    background: linear-gradient(135deg, #1a7f4e, #14603a);
+    color: white;
+    padding: 24px 32px;
+}
+
+.topbar h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px 16px 60px;
+}
+
+.footer {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    padding: 20px;
+}
+
+/* ===================== Summary cards ===================== */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+}
+
+.card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.card h3 {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.card .amount {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.income-card .amount { color: var(--green); }
+.expense-card .amount { color: var(--red); }
+.balance-card .amount { color: var(--blue); }
+.balance-card.negative .amount { color: var(--red); }
+
+.month-label {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 12px 2px 24px;
+}
+
+/* ===================== Panels ===================== */
+.panel {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 20px;
+}
+
+.panel h2 {
+    margin-top: 0;
+    font-size: 1.1rem;
+}
+
+.empty-state {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* ===================== Budget progress ===================== */
+.budget-item {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.budget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.category-name {
+    font-weight: 600;
+}
+
+.budget-figures {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.progress-bar-track {
+    background: #eef0f3;
+    border-radius: 999px;
+    height: 10px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--green);
+    border-radius: 999px;
+}
+
+.progress-bar-fill.over {
+    background: var(--red);
+}
+
+/* ===================== Forms ===================== */
+.form-row, .form-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.form-row input,
+.form-row select,
+.form-grid input,
+.form-grid select {
+    padding: 9px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    flex: 1 1 140px;
+}
+
+.inline-form {
+    display: inline;
+}
+
+.btn {
+    padding: 9px 16px;
+    border-radius: 6px;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-primary {
+    background: var(--green);
+    color: white;
+}
+
+.btn-secondary {
+    background: var(--blue);
+    color: white;
+}
+
+.btn-clear {
+    background: #eef0f3;
+    color: var(--text-dark);
+}
+
+.link-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+    margin-top: 4px;
+}
+
+.link-btn.danger {
+    color: var(--red);
+}
+
+/* ===================== Badges ===================== */
+.badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.badge-danger {
+    background: var(--red-light);
+    color: var(--red);
+    margin-left: 8px;
+}
+
+.badge-income {
+    background: var(--green-light);
+    color: var(--green);
+}
+
+.badge-expense {
+    background: var(--red-light);
+    color: var(--red);
+}
+
+/* ===================== Table ===================== */
+.tx-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.tx-table th, .tx-table td {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.tx-table th {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.tx-table tr:hover {
+    background: #fafbfc;
+}
+
+@media (max-width: 600px) {
+    .form-row, .form-grid {
+        flex-direction: column;
+    }
+    .form-row input, .form-row select,
+    .form-grid input, .form-grid select {
+        width: 100%;
+    }
+}
