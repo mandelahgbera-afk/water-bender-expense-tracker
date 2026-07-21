@@ -25,7 +25,7 @@
     <!-- ===================== BUDGET PROGRESS ===================== -->
     <section class="panel">
         <h2>Budget Progress</h2>
-
+        <div class="budget-panel-inner">
         {% if budget_progress %}
             {% for b in budget_progress %}
             <div class="budget-item">
@@ -54,13 +54,20 @@
         <form method="POST" action="{{ url_for('set_budget') }}" class="form-row">
             <input type="text" name="category" placeholder="Category (e.g. Food)" required list="category-list">
             <input type="number" name="monthly_limit" placeholder="Monthly limit (₦)" step="0.01" min="0" required>
-            <button type="submit" class="btn btn-primary">Set Budget</button>
+            <button type="submit" class="btn btn-primary btn-sm">Set Budget</button>
         </form>
+        </div>
     </section>
 
-    <!-- ===================== ADD TRANSACTION ===================== -->
+    <!-- ===================== ADD TRANSACTION (Side-Valve Modal) ===================== -->
     <section class="panel">
         <h2>Add Transaction</h2>
+        <p class="muted" style="font-size:0.85rem;margin-top:-6px;margin-bottom:10px;">
+            Click below to open a modal instead of a full-page form.
+        </p>
+
+        <!-- Fallback form (works without JS) -->
+        <noscript>
         <form method="POST" action="{{ url_for('add_transaction') }}" class="form-grid">
             <select name="type" required>
                 <option value="expense">Expense</option>
@@ -72,6 +79,10 @@
             <input type="text" name="note" placeholder="Note (optional)">
             <button type="submit" class="btn btn-primary">Add</button>
         </form>
+        </noscript>
+
+        <!-- JS button to open modal -->
+        <button id="btn-add-modal" class="btn btn-primary ripple-host" data-js-only style="display:none;">＋ Quick Add (Modal)</button>
 
         <datalist id="category-list">
             {% for c in categories %}
@@ -80,9 +91,12 @@
         </datalist>
     </section>
 
-    <!-- ===================== FILTER ===================== -->
+    <!-- ===================== LIVE FILTER (Screen the Conveyor Belt) ===================== -->
     <section class="panel">
-        <h2>Filter Transactions</h2>
+        <h2>Transactions</h2>
+
+        <!-- Existing server-side filter form (works without JS) -->
+        <noscript>
         <form method="GET" action="{{ url_for('dashboard') }}" class="form-row">
             <select name="category">
                 <option value="">All Categories</option>
@@ -92,14 +106,21 @@
             </select>
             <input type="date" name="start_date" value="{{ start_date or '' }}" placeholder="From">
             <input type="date" name="end_date" value="{{ end_date or '' }}" placeholder="To">
-            <button type="submit" class="btn btn-secondary">Filter</button>
-            <a href="{{ url_for('dashboard') }}" class="btn btn-clear">Clear</a>
+            <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-clear btn-sm">Clear</a>
         </form>
-    </section>
+        </noscript>
 
-    <!-- ===================== TRANSACTIONS TABLE ===================== -->
-    <section class="panel">
-        <h2>Transactions</h2>
+        <!-- Live filter (JS-enhanced, hidden until JS loads) -->
+        <div id="live-filter-row" class="form-row" data-js-only style="display:none;">
+            <div class="live-filter-wrap" style="flex:1;">
+                <input type="text" id="live-filter-input" placeholder="Live search: category, note, amount…" autocomplete="off">
+            </div>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-clear btn-sm">Clear</a>
+        </div>
+
+        <!-- ===================== TRANSACTIONS TABLE ===================== -->
+        <div id="transactions-table-wrap">
         {% if transactions %}
         <table class="tx-table">
             <thead>
@@ -114,16 +135,21 @@
             </thead>
             <tbody>
                 {% for t in transactions %}
-                <tr class="{{ t.type }}">
-                    <td>{{ t.date }}</td>
+                <tr class="tx-row {{ t.type }}"
+                    data-id="{{ t.id }}"
+                    data-row="{{ t|tojson | forceescape }}">
+                    <td class="td-date">{{ t.date }}</td>
                     <td><span class="badge {{ 'badge-income' if t.type == 'income' else 'badge-expense' }}">{{ t.type }}</span></td>
-                    <td>{{ t.category }}</td>
-                    <td>₦{{ "%.2f"|format(t.amount) }}</td>
-                    <td>{{ t.note or "—" }}</td>
+                    <td class="td-category">{{ t.category }}</td>
+                    <td class="td-amount">₦{{ "%.2f"|format(t.amount) }}</td>
+                    <td class="td-note">{{ t.note or "—" }}</td>
                     <td>
-                        <form method="POST" action="{{ url_for('delete_transaction', transaction_id=t.id) }}" class="inline-form">
-                            <button type="submit" class="link-btn danger">Delete</button>
-                        </form>
+                        <div class="row" style="gap:8px;">
+                            <button class="link-btn btn-edit" data-id="{{ t.id }}">Edit</button>
+                            <form method="POST" action="{{ url_for('delete_transaction', transaction_id=t.id) }}" class="inline-form">
+                                <button type="submit" class="link-btn danger btn-delete" data-id="{{ t.id }}">Delete</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -132,6 +158,18 @@
         {% else %}
             <p class="empty-state">No transactions found.</p>
         {% endif %}
+        </div>
+    </section>
+
+    <!-- ===================== LIVE CHARTS (Flow Diagram) ===================== -->
+    <section class="panel">
+        <h2>Spending Breakdown (Live Flow Diagram)</h2>
+        <p class="muted" style="font-size:0.85rem;margin-top:-6px;margin-bottom:10px;">
+            Charts update as you add/delete transactions.
+        </p>
+        <div style="max-width:460px; margin:0 auto;">
+            <canvas id="chart-pie"></canvas>
+        </div>
     </section>
 
 {% endblock %}

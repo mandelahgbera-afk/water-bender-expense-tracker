@@ -10,6 +10,8 @@
     --text-dark: #1f2430;
     --text-muted: #6b7280;
     --radius: 10px;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --ease: 0.25s ease;
 }
 
 * { box-sizing: border-box; }
@@ -21,130 +23,258 @@ body {
     color: var(--text-dark);
 }
 
-.topbar {
-    background: linear-gradient(135deg, #1a7f4e, #14603a);
-    color: white;
-    padding: 24px 32px;
-}
-
-.topbar h1 {
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-.container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 24px 16px 60px;
-}
-
-.footer {
-    text-align: center;
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    padding: 20px;
-}
-
-/* ===================== Summary cards ===================== */
-.summary-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 8px;
-}
-
-.card {
-    background: white;
-    border-radius: var(--radius);
-    padding: 18px 20px;
-    border: 1px solid var(--border);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-}
-
-.card h3 {
-    margin: 0 0 8px;
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.card .amount {
-    margin: 0;
-    font-size: 1.6rem;
-    font-weight: 700;
-}
-
-.income-card .amount { color: var(--green); }
-.expense-card .amount { color: var(--red); }
-.balance-card .amount { color: var(--blue); }
-.balance-card.negative .amount { color: var(--red); }
-
-.month-label {
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    margin: 12px 2px 24px;
-}
-
-/* ===================== Panels ===================== */
-.panel {
-    background: white;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 22px;
-    margin-bottom: 20px;
-}
-
-.panel h2 {
-    margin-top: 0;
-    font-size: 1.1rem;
-}
-
-.empty-state {
-    color: var(--text-muted);
-    font-style: italic;
-}
-
-/* ===================== Budget progress ===================== */
-.budget-item {
-    margin-bottom: 18px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border);
-}
-
-.budget-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.category-name {
-    font-weight: 600;
-}
-
-.budget-figures {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-}
-
-.progress-bar-track {
-    background: #eef0f3;
-    border-radius: 999px;
-    height: 10px;
+/* ===================== Ripple & Micro-Interactions ===================== */
+.ripple-host {
+    position: relative;
     overflow: hidden;
 }
 
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    background: rgba(255, 255, 255, 0.4);
+    animation: ripple-anim 0.55s linear;
+    pointer-events: none;
+}
+
+@keyframes ripple-anim {
+    to { transform: scale(4); opacity: 0; }
+}
+
+.btn {
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: transform var(--ease), box-shadow var(--ease), background var(--ease), opacity var(--ease);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.btn:active {
+    transform: translateY(0) scale(0.97);
+    transition: transform 0.08s ease;
+}
+
+.btn-primary {
+    background: var(--green);
+    color: white;
+}
+
+.btn-primary:hover { background: #14603a; }
+
+.btn-secondary {
+    background: var(--blue);
+    color: white;
+}
+
+.btn-secondary:hover { background: #1d4ed8; }
+
+.btn-clear {
+    background: #eef0f3;
+    color: var(--text-dark);
+}
+
+.btn-clear:hover { background: #dde1e6; }
+
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    border-radius: 6px;
+}
+
+.btn-danger {
+    background: var(--red);
+    color: white;
+}
+
+.btn-danger:hover { background: #a93226; }
+
+/* ===================== Toast ===================== */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+
+.toast {
+    pointer-events: auto;
+    padding: 12px 18px;
+    border-radius: 10px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: var(--shadow);
+    animation: slideIn 0.3s ease, fadeOut 0.4s ease 1.8s forwards;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toast.success { background: var(--green); }
+.toast.error { background: var(--red); }
+.toast.info { background: var(--blue); }
+
+@keyframes slideIn {
+    from { transform: translateX(120%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* ===================== Modal ===================== */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 500;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.2s ease;
+    backdrop-filter: blur(2px);
+}
+
+.modal-card {
+    background: white;
+    border-radius: 14px;
+    padding: 24px;
+    width: 90%;
+    max-width: 520px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: popUp 0.3s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes popUp { from { transform: scale(0.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.modal-header h3 { margin: 0; font-size: 1.1rem; }
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color var(--ease);
+}
+
+.modal-close:hover { color: var(--text-dark); }
+
+/* ===================== Inline Edit Row ===================== */
+.tx-row.editing {
+    background: #eef2ff;
+    transition: background 0.2s ease;
+}
+
+.tx-row.editing td {
+    padding: 4px 8px;
+}
+
+.tx-row .edit-form-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.tx-row .edit-form-row input,
+.tx-row .edit-form-row select {
+    padding: 5px 8px;
+    border: 1px solid var(--blue);
+    border-radius: 6px;
+    font-size: 0.82rem;
+    width: 100%;
+}
+
+/* ===================== Table ===================== */
+.tx-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.tx-table th, .tx-table td {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.tx-table th {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.tx-table tbody tr {
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.tx-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.tx-table tbody tr.row-removing {
+    animation: rowRemove 0.3s ease forwards;
+}
+
+@keyframes rowRemove {
+    to { opacity: 0; transform: translateX(-20px); height: 0; }
+}
+
+.tx-table tbody tr.row-added {
+    animation: rowAdd 0.4s ease;
+}
+
+@keyframes rowAdd {
+    from { opacity: 0; transform: translateY(-8px); background: #e6f6ee; }
+    to { opacity: 1; transform: translateY(0); background: transparent; }
+}
+
+/* ===================== Budget Progress Live ===================== */
 .progress-bar-fill {
     height: 100%;
     background: var(--green);
     border-radius: 999px;
+    transition: width 0.5s ease, background 0.4s ease;
 }
 
 .progress-bar-fill.over {
     background: var(--red);
+}
+
+.progress-bar-fill.live-pulse {
+    animation: livePulse 1.2s ease infinite;
+}
+
+@keyframes livePulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.3); }
 }
 
 /* ===================== Forms ===================== */
@@ -164,37 +294,19 @@ body {
     border-radius: 6px;
     font-size: 0.9rem;
     flex: 1 1 140px;
+    transition: border-color var(--ease), box-shadow var(--ease);
 }
 
-.inline-form {
-    display: inline;
+.form-row input:focus,
+.form-row select:focus,
+.form-grid input:focus,
+.form-grid select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    outline: none;
 }
 
-.btn {
-    padding: 9px 16px;
-    border-radius: 6px;
-    border: none;
-    font-size: 0.9rem;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-}
-
-.btn-primary {
-    background: var(--green);
-    color: white;
-}
-
-.btn-secondary {
-    background: var(--blue);
-    color: white;
-}
-
-.btn-clear {
-    background: #eef0f3;
-    color: var(--text-dark);
-}
+.inline-form { display: inline; }
 
 .link-btn {
     background: none;
@@ -205,11 +317,12 @@ body {
     text-decoration: underline;
     padding: 0;
     margin-top: 4px;
+    transition: color var(--ease);
 }
 
-.link-btn.danger {
-    color: var(--red);
-}
+.link-btn:hover { color: var(--blue); }
+.link-btn.danger { color: var(--red); }
+.link-btn.danger:hover { color: #a93226; }
 
 /* ===================== Badges ===================== */
 .badge {
@@ -237,30 +350,38 @@ body {
     color: var(--red);
 }
 
-/* ===================== Table ===================== */
-.tx-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
+/* ===================== Cards ===================== */
+.card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    transition: transform var(--ease), box-shadow var(--ease);
 }
 
-.tx-table th, .tx-table td {
-    text-align: left;
-    padding: 10px 8px;
-    border-bottom: 1px solid var(--border);
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.07);
 }
 
-.tx-table th {
-    color: var(--text-muted);
-    font-size: 0.78rem;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+/* ===================== Live Filter Input ===================== */
+.live-filter-wrap {
+    position: relative;
 }
 
-.tx-table tr:hover {
-    background: #fafbfc;
+.live-filter-wrap::after {
+    content: "🔍";
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.85rem;
+    opacity: 0.4;
+    pointer-events: none;
 }
 
+/* ===================== Responsive ===================== */
 @media (max-width: 600px) {
     .form-row, .form-grid {
         flex-direction: column;
@@ -268,5 +389,10 @@ body {
     .form-row input, .form-row select,
     .form-grid input, .form-grid select {
         width: 100%;
+    }
+
+    .modal-card {
+        width: 96%;
+        padding: 16px;
     }
 }

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Expense Tracker{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Chart.js for live flow diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <header class="topbar">
@@ -16,7 +18,16 @@
     </main>
 
     <footer class="footer">
-        <p>Built with Python, Flask, SQLite3, HTML & CSS — no JavaScript.</p>
+        <p>Built with Python, Flask, SQLite3, HTML & CSS — now with interactive JavaScript.</p>
     </footer>
+
+    <!-- Toast container (spillway feedback) -->
+    <div class="toast-container"></div>
+
+    <!-- Modal mount point (side-valve) -->
+    <div id="modal-mount"></div>
+
+    <!-- Interactive layer -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

@@ -1,39 +1,72 @@
 """
 app.py
-------
+-----
 Expense Tracker & Budget Management System
-Pure Python + HTML + CSS (no JavaScript).
+Flask + SQLite + Jinja2.
 
-Every user action (adding a transaction, setting a budget, filtering,
-deleting) is handled through a normal HTML <form> POST/GET request.
-Flask processes the request, updates the SQLite database, recalculates
-all totals/budget usage in Python, and re-renders the dashboard with
-Jinja2 templates. There is no client-side scripting at all.
+Interactive layer:
+  - All POST endpoints support both HTML form redirects AND JSON AJAX.
+  - New /api/* endpoints serve JSON for live JS components.
+  - If the client sends X-Requested-With: XMLHttpRequest, the endpoint
+    returns JSON instead of redirecting. This keeps the app fully
+    functional without JS (progressive enhancement).
 """
 
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 import db
 
 app = Flask(__name__)
 
 
+# ===================== Helpers =====================
+
+def _wants_json():
+    return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+
+def _json_ok(**kwargs):
+    return jsonify(success=True, **kwargs)
+
+
+def _json_err(msg):
+    return jsonify(success=False, error=msg), 400
+
+
+# ===================== Routes =====================
+
 @app.route("/")
 def dashboard():
-    # Read optional filters from the query string (?category=Food&start_date=...)
+    """
+    Main dashboard. Reads filters from query string, queries the DB,
+    computes budget_progress in Python, and renders Jinja2.
+
+    When called via AJAX (X-Requested-With header), returns the full
+    HTML page (the JS swaps specific fragments out).
+    """
     category = request.args.get("category") or None
     start_date = request.args.get("start_date") or None
     end_date = request.args.get("end_date") or None
     month = request.args.get("month") or db.get_current_month()
+    q = request.args.get("q") or None  # live keyword filter
 
     transactions = db.get_transactions(category, start_date, end_date)
+
+    # Keyword filter (applied server-side so the DB does the heavy lifting)
+    if q:
+        q_lower = q.lower()
+        transactions = [
+            t for t in transactions
+            if q_lower in t["category"].lower()
+            or q_lower in (t["note"] or "").lower()
+            or q_lower in t["type"].lower()
+            or q_lower in str(t["amount"])
+        ]
+
     summary = db.get_summary(month)
     budgets = db.get_budgets()
     spending = db.get_spending_by_category(month)
     categories = db.get_all_categories()
 
-    # Build a budget progress list: how much of each budget has been used,
-    # and whether the category is over budget. This logic lives in Python
-    # since there's no JS to compute it on the client.
     budget_progress = []
     for b in budgets:
         spent = spending.get(b["category"], 0)
@@ -62,15 +95,28 @@ def dashboard():
     )
 
 
+# ===================== Transaction CRUD =====================
+
 @app.route("/add_transaction", methods=["POST"])
 def add_transaction():
-    type_ = request.form.get("type")
-    category = request.form.get("category", "").strip()
-    amount = request.form.get("amount")
-    date = request.form.get("date")
-    note = request.form.get("note", "").strip()
+    """
+    Add a transaction. Accepts form-encoded (standard HTML form)
+    OR JSON body (AJAX modal submit).
+    """
+    if request.is_json:
+        data = request.get_json()
+        type_ = data.get("type")
+        category = (data.get("category") or "").strip()
+        amount = data.get("amount")
+        date = data.get("date")
+        note = (data.get("note") or "").strip()
+    else:
+        type_ = request.form.get("type")
+        category = request.form.get("category", "").strip()
+        amount = request.form.get("amount")
+        date = request.form.get("date")
+        note = request.form.get("note", "").strip()
 
-    # Basic server-side validation since there's no JS to validate in the browser
     try:
         amount = float(amount)
     except (TypeError, ValueError):
@@ -78,37 +124,107 @@ def add_transaction():
 
     if type_ in ("income", "expense") and category and amount > 0 and date:
         db.add_transaction(type_, category, amount, date, note)
+        if _wants_json():
+            return _json_ok(message="transaction added")
+        return redirect(url_for("dashboard"))
 
+    if _wants_json():
+        return _json_err("Invalid input")
     return redirect(url_for("dashboard"))
+
+
+@app.route("/edit_transaction/<int:transaction_id>", methods=["POST"])
+def edit_transaction(transaction_id):
+    """
+    Edit an existing transaction in place. Accepts JSON body from JS.
+    Falls back to JSON error on invalid input.
+    """
+    if not request.is_json:
+        return _json_err("Expected JSON body"), 400
+
+    data = request.get_json()
+    type_ = data.get("type")
+    category = (data.get("category") or "").strip()
+    amount = float(data.get("amount") or 0)
+    date = data.get("date")
+    note = (data.get("note") or "").strip()
+
+    if not (type_ in ("income", "expense") and category and amount > 0 and date):
+        return _json_err("Invalid input"), 400
+
+    db.update_transaction(transaction_id, type_, category, amount, date, note)
+    return _json_ok(message="transaction updated")
 
 
 @app.route("/delete_transaction/<int:transaction_id>", methods=["POST"])
 def delete_transaction(transaction_id):
+    """
+    Delete a transaction. Accepts both form POSTs and AJAX (XHR).
+    """
     db.delete_transaction(transaction_id)
+    if _wants_json():
+        return _json_ok(message="transaction deleted")
     return redirect(url_for("dashboard"))
 
 
+# ===================== Budget CRUD =====================
+
 @app.route("/set_budget", methods=["POST"])
 def set_budget():
-    category = request.form.get("category", "").strip()
-    monthly_limit = request.form.get("monthly_limit")
-
-    try:
-        monthly_limit = float(monthly_limit)
-    except (TypeError, ValueError):
-        monthly_limit = 0
+    """
+    Set (upsert) a monthly budget. Supports both form POST and
+    JSON body for AJAX modal submit.
+    """
+    if request.is_json:
+        data = request.get_json()
+        category = (data.get("category") or "").strip()
+        monthly_limit = float(data.get("monthly_limit") or 0)
+    else:
+        category = request.form.get("category", "").strip()
+        monthly_limit = float(request.form.get("monthly_limit") or 0)
 
     if category and monthly_limit > 0:
         db.set_budget(category, monthly_limit)
+        if _wants_json():
+            return _json_ok(message="budget set")
+        return redirect(url_for("dashboard"))
 
+    if _wants_json():
+        return _json_err("Invalid input"), 400
     return redirect(url_for("dashboard"))
 
 
 @app.route("/delete_budget/<category>", methods=["POST"])
 def delete_budget(category):
     db.delete_budget(category)
+    if _wants_json():
+        return _json_ok(message="budget removed")
     return redirect(url_for("dashboard"))
 
+
+# ===================== JSON API (for charts and live filter) =====================
+
+@app.route("/api/summary")
+def api_summary():
+    month = request.args.get("month") or db.get_current_month()
+    summary = db.get_summary(month)
+    return jsonify(summary)
+
+
+@app.route("/api/spending_by_category")
+def api_spending_by_category():
+    month = request.args.get("month") or db.get_current_month()
+    spending = db.get_spending_by_category(month)
+    return jsonify(spending)
+
+
+@app.route("/api/budgets")
+def api_budgets():
+    budgets = db.get_budgets()
+    return jsonify(budgets)
+
+
+# ===================== Bootstrap =====================
 
 if __name__ == "__main__":
     db.init_db()

@@ -75,6 +75,18 @@ def delete_transaction(transaction_id):
     conn.close()
 
 
+def update_transaction(transaction_id, type_, category, amount, date, note=""):
+    """Update an existing transaction row by ID."""
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE transactions SET type=?, category=?, amount=?, date=?, note=? WHERE id=?",
+        (type_, category, amount, date, note, transaction_id)
+    )
+    conn.commit()
+    conn.close()
+
+
 def get_transactions(category=None, start_date=None, end_date=None):
     """Return transactions, optionally filtered by category and/or a date range.
     Filters are applied only when provided, so calling with no arguments
