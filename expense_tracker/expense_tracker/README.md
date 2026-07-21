@@ -1,68 +1,33 @@
-# Expense Tracker & Budget Management System
+# Expense Tracker & Budget Management System (Flask)
 
-A pure **Python + HTML + CSS** web application (no JavaScript) for
-tracking income/expenses and managing category budgets.
+Pure Python + Flask + SQLite + Jinja2 + CSS. No client-side JavaScript.
 
-## Tech Stack
-- **Python (Flask)** — routing, business logic, budget calculations
-- **SQLite3** — data storage (transactions + budgets tables)
-- **Jinja2** — server-side HTML templating
-- **HTML** — forms for every user action (add, filter, delete)
-- **CSS** — styling, progress bars, color-coded alerts
+## Run
 
-There is **no JavaScript**. Every action (adding a transaction,
-setting a budget, filtering, deleting) submits a normal HTML form and
-reloads the page with fresh data computed in Python.
-
-## Project Structure
-```
-expense_tracker/
-├── app.py              # Flask routes
-├── db.py                # All SQLite3 database logic
-├── requirements.txt
-├── templates/
-│   ├── base.html         # Shared layout
-│   └── dashboard.html    # Main page: cards, budgets, forms, table
-└── static/
-    └── style.css          # All styling
+```bash
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\\Scripts\\activate
+pip install -r requirements.txt
+python app.py
 ```
 
-## How to Run
+Open http://127.0.0.1:5000
 
-1. Install Flask:
-   ```
-   pip install -r requirements.txt
-   ```
+## What it does
 
-2. Run the app:
-   ```
-   python app.py
-   ```
+- Add income / expense transactions
+- Delete transactions
+- Set monthly budgets per category with visual progress bars
+- Filter transactions by category + date range
+- Server-computed budget_progress (remaining, percent, over_budget flag)
 
-3. Open your browser to:
-   ```
-   http://127.0.0.1:5000
-   ```
+## Architecture
 
-The database file `expense_tracker.db` is created automatically the
-first time you run the app.
-
-## Features
-- Add income and expense transactions (category, amount, date, note)
-- Set a monthly budget limit per category
-- Dashboard summary: total income, total expense, balance
-- Budget progress bars, with a red "Over Budget" badge when exceeded
-- Filter transactions by category and date range
-- Delete transactions or budgets
-- Fully responsive layout (usable on phone or desktop)
-
-## How It Works (for your defense)
-1. A form submits data via `POST` (e.g. `/add_transaction`).
-2. Flask reads `request.form`, validates it in Python, and saves it
-   to SQLite via functions in `db.py`.
-3. Flask redirects back to `/` (the dashboard route).
-4. The dashboard route recalculates totals and budget usage in
-   Python (`get_summary`, `get_spending_by_category`) and passes
-   them into `dashboard.html`.
-5. Jinja2 renders the final HTML with the numbers already baked in —
-   the browser never runs any calculation itself.
+| File | Role |
+|---|---|
+| `app.py` | Flask routes — reads query params, computes budget_progress, renders templates |
+| `db.py` | SQLite schema + CRUD + analytics |
+| `templates/base.html` | Jinja2 layout shell |
+| `templates/dashboard.html` | Full UI (cards, progress bars, forms, table) |
+| `static/style.css` | Complete theming (green/red/blue, responsive) |
+| `requirements.txt` | Flask>=3.0 |
