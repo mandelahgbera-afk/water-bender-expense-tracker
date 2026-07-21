@@ -1,16 +1,17 @@
 // Frontend upgrade layers for the Flask Expense Tracker.
-// Each layer is an interactive feature with water analogy, purpose, and code.
+// Restaurant + kitchen analogies for the interactive JS layer.
+// Each layer is an independent skill the learner adds to their station.
 
 export const FRONTEND_LAYERS = [
   {
     id: 'toast',
     num: 1,
-    title: 'Toast Notifications (Spillway Feedback)',
-    analogy: 'When water exits a pipe, it splashes — a toast is that splash confirming the action.',
+    title: 'Toast Notifications (Order Chit Call)',
+    analogy: 'When the kitchen calls out an order, the waiter acknowledges with a nod. A toast is that acknowledgment — visible, auto-dismissing, non-blocking.',
     files: ['static/app.js', 'templates/base.html'],
     concepts: ['functions', 'strings'],
     summary: 'Replaces Flask flash messages with JS-powered toasts that auto-dismiss after 2.4s. No page reload needed.',
-    code: `// app.js — Toast spillway
+    code: `// app.js — Order acknowledgment chit
 function toast(message, type = 'success') {
     const container = document.querySelector('.toast-container');
     const el = document.createElement('div');
@@ -23,12 +24,12 @@ function toast(message, type = 'success') {
   {
     id: 'modal',
     num: 2,
-    title: 'Modal Dialog (Side-Valve)',
-    analogy: 'A side-valve lets you open a new channel without draining the main pipe. The modal opens over the running flow.',
+    title: 'Modal Dialog (Side Counter / Express Station)',
+    analogy: 'A quick express station at the bar where you grab a coffee without waiting for a table. The modal opens over the dining room without clearing it.',
     files: ['static/app.js', 'templates/base.html', 'templates/dashboard.html'],
     concepts: ['functions', 'strings', 'lists'],
-    summary: 'Add transaction in a modal dialog instead of navigating to a new page. No context lost.',
-    code: `// app.js — Open side-valve
+    summary: 'Add transaction in a modal dialog instead of navigating away. Context never lost.',
+    code: `// app.js — Open express station
 function openModal(title, bodyHTML, onSave) {
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay';
@@ -46,31 +47,30 @@ function openModal(title, bodyHTML, onSave) {
   {
     id: 'ripple',
     num: 3,
-    title: 'Ripple Buttons (Pressure Pulse)',
-    analogy: 'When a water bender touches a pipe, a pressure pulse radiates outward — the ripple follows the finger.',
+    title: 'Ripple Buttons (Plate Press / Stamp)',
+    analogy: 'When the chef plates a dish, they press the logo stamp on the rim. A ripple button presses a branded mark at the exact touch point.',
     files: ['static/style.css', 'static/app.js'],
     concepts: ['functions', 'strings'],
-    summary: 'Every button click spawns an animated water ripple at the exact touch point.',
-    code: `/* style.css — ripple pulse */
+    summary: 'Every button click spawns an animated branded ripple at the exact touch point.',
+    code: `/* style.css — plate press */
 .ripple {
     position: absolute;
     border-radius: 50%;
     transform: scale(0);
     background: rgba(255,255,255,0.4);
     animation: ripple-anim 0.55s linear;
-    pointer-events: none;
 }
 @keyframes ripple-anim { to { transform: scale(4); opacity: 0; } }`
   },
   {
     id: 'inline-edit',
     num: 4,
-    title: 'Inline Edit (Adjust Valves While Flow Runs)',
-    analogy: 'Instead of shutting down the pipe to replace a section, you open a service port and adjust the valve in place.',
+    title: 'Inline Edit (Ticket Correction at the Pass)',
+    analogy: 'A ticket comes back from the table: "no onions". Instead of reprinting the whole order, the expeditor crosses off the line and writes the correction at the pass.',
     files: ['static/app.js', 'templates/dashboard.html', 'app.py'],
     concepts: ['functions', 'conditionals', 'loops', 'database', 'exceptions'],
-    summary: 'Click "Edit" on a table row — cells morph into inputs. Save sends JSON to /edit_transaction/<id> without page reload.',
-    code: `// app.js — Transform row into edit form
+    summary: 'Click Edit on a table row — cells morph into inputs. Save sends JSON to /edit_transaction/<id> without page reload.',
+    code: `// app.js — Ticket correction at the pass
 btn.addEventListener('click', () => {
     tr.classList.add('editing');
     tr.innerHTML = \`
@@ -87,12 +87,12 @@ btn.addEventListener('click', () => {
   {
     id: 'ajax-delete',
     num: 5,
-    title: 'AJAX Delete with Animation (Drain with Style)',
-    analogy: 'Draining a pipe section with a smooth drain animation instead of a jarring cutoff.',
+    title: 'AJAX Delete with Animation (Table Bussing)',
+    analogy: 'Bussing a table smoothly — wipe, stack chairs, walk away — instead of knocking the plate off the table.',
     files: ['static/app.js', 'app.py', 'templates/dashboard.html'],
     concepts: ['functions', 'exceptions', 'database'],
     summary: 'Delete button triggers AJAX POST to /delete_transaction/<id>, row animates out (rowRemove), table refreshes silently.',
-    code: `// app.js — Drain with animation
+    code: `// app.js — Smooth table bussing
 btn.addEventListener('click', async (e) => {
     e.preventDefault();
     const tr = btn.closest('tr');
@@ -105,12 +105,12 @@ btn.addEventListener('click', async (e) => {
   {
     id: 'live-filter',
     num: 6,
-    title: 'Live Debounced Filter (Screen the Conveyor Belt)',
-    analogy: 'A live filter is a mesh screen placed over the conveyor belt — water (data) passes through only what matches.',
+    title: 'Live Debounced Filter (Rail Sorter)',
+    analogy: 'A server scanning the order rail as tickets come in, rerouting matching tickets to the front. The filter is the sorter eye.',
     files: ['static/app.js', 'app.py', 'templates/dashboard.html'],
     concepts: ['functions', 'loops', 'strings', 'lists', 'conditionals'],
-    summary: 'Typing in the filter input triggers a debounced AJAX GET after 300ms. Server applies keyword filter, returns refreshed table HTML.',
-    code: `// app.js — Debounced conveyor screen
+    summary: 'Typing triggers a debounced AJAX GET after 280ms. Server applies keyword filter, returns refreshed table HTML.',
+    code: `// app.js — Rail sorter
 const filter = debounce(async (query) => {
     const url = new URL(window.location.href);
     url.searchParams.set('q', query);
@@ -118,17 +118,17 @@ const filter = debounce(async (query) => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
     tableWrap.innerHTML = doc.getElementById('transactions-table-wrap').innerHTML;
-}, 300);`
+}, 280);`
   },
   {
     id: 'live-charts',
     num: 7,
-    title: 'Live Pie Chart (Flow Diagram)',
-    analogy: 'A flow diagram that redraws itself every time the water flow changes — no manual blueprints needed.',
+    title: 'Live Pie Chart (Sales Board)',
+    analogy: 'The kitchen\'s live sales board showing tonight\'s moves by category — no manual tally needed.',
     files: ['static/app.js', 'static/style.css', 'templates/dashboard.html', 'templates/base.html'],
     concepts: ['lists', 'dictionaries', 'visualization', 'loops'],
-    summary: 'Chart.js renders a pie chart from the transaction table on load. After add/delete, the chart redraws from the refreshed DOM.',
-    code: `// app.js — Flow diagram redraw
+    summary: 'Chart.js renders a pie chart from the transaction table. After add/delete, the board redraws automatically.',
+    code: `// app.js — Sales board
 const canvas = document.getElementById('chart-pie');
 const spentByCat = {};
 document.querySelectorAll('.tx-table tbody tr').forEach(tr => {
@@ -143,12 +143,12 @@ new Chart(canvas, { type: 'pie', data: { labels: Object.keys(spentByCat), datase
   {
     id: 'live-bars',
     num: 8,
-    title: 'Animated Budget Bars (Live Pressure Gauges)',
-    analogy: 'Pressure gauges that animate in real-time as water drains — no more static, stale readings.',
+    title: 'Animated Budget Bars (Live Station Gauges)',
+    analogy: 'Each prep station has a gauge showing daily spend. When an order goes out, the gauge shifts in real-time.',
     files: ['static/app.js', 'static/style.css', 'templates/dashboard.html', 'app.py'],
     concepts: ['operators', 'conditionals', 'variables', 'css'],
-    summary: 'Budget progress bars get a live-pulse CSS animation. On AJAX refresh, bars smoothly transition width (0.5s ease) and color (green→red when over).',
-    code: `/* style.css — live gauge pulse */
+    summary: 'Budget progress bars get a live-pulse CSS animation. On AJAX refresh, bars smoothly transition width and color (green → red when over).',
+    code: `/* style.css — live station gauge */
 .progress-bar-fill {
     transition: width 0.5s ease, background 0.4s ease;
 }
@@ -163,26 +163,26 @@ new Chart(canvas, { type: 'pie', data: { labels: Object.keys(spentByCat), datase
   {
     id: 'progressive',
     num: 9,
-    title: 'Progressive Enhancement (Backward Compatibility)',
-    analogy: 'The main pipe still works even if the side-valves are closed. Every feature degrades gracefully.',
+    title: 'Progressive Enhancement (Full-Service Restaurant)',
+    analogy: 'A full-service restaurant that works whether you call orders in by phone, use the call button, or walk up to the counter. Every method works; the fancy ones are just smoother.',
     files: ['app.py', 'templates/dashboard.html', 'static/app.js'],
     concepts: ['functions', 'conditionals', 'file', 'exceptions'],
-    summary: 'All POST endpoints return JSON for XHR requests AND redirect for form submits. noscript tags provide full non-JS fallback. data-js-only hides JS buttons until app.js loads.',
-    code: `# app.py — Progressive enhancement pattern
+    summary: 'All POST endpoints return JSON for XHR AND redirect for form submits. noscript tags provide full non-JS fallback. data-js-only hides enhancements until JS loads.',
+    code: `# app.py — Serve every guest, regardless of method
 def _wants_json():
     return request.headers.get('X-Requested-With') == 'XMLHttpRequest'
 
 @app.route("/add_transaction", methods=["POST"])
 def add_transaction():
-    # ... handle both form and JSON ...
+    # ... handle both JSON body and form data ...
     if _wants_json():
-        return jsonify(success=True)
-    return redirect(url_for("dashboard"))
+        return jsonify(success=True)  # AJAX — express counter
+    return redirect(url_for("dashboard"))  # Form — table service
 
 {# dashboard.html — noscript fallback #}
 <noscript>
 <form method="POST" action="{{ url_for('add_transaction') }}">
-    <!-- full form -->
+    <!-- full form for non-JS guests -->
 </form>
 </noscript>
 <button id="btn-add-modal" data-js-only style="display:none;">Quick Add</button>`
