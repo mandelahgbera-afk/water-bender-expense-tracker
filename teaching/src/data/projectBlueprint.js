@@ -5,6 +5,7 @@
 export const PROJECT_BLUEPRINT = {
   name: 'expense_tracker',
   root: 'expense_tracker/',
+  repoUrl: 'https://github.com/mandelahgbera-afk/expense-tracker',
   description: 'A Flask-based restaurant for money management. The front-of-house (Flask app) takes orders, the walk-in pantry (SQLite) stores ingredients (transactions), and the menu layouts (Jinja2) plate the experience.',
   files: [
     {

@@ -75,6 +75,13 @@ function Shell() {
         <p className="muted" style={{ maxWidth: 780, marginTop: 8, lineHeight: 1.6 }}>
           {PROJECT_BLUEPRINT.description}
         </p>
+        {PROJECT_BLUEPRINT.repoUrl && (
+          <div style={{ marginTop: 10 }}>
+            <a className="btn btn-primary btn-sm" href={PROJECT_BLUEPRINT.repoUrl} target="_blank" rel="noopener noreferrer">
+              🐙 Open Expense Tracker Project on GitHub
+            </a>
+          </div>
+        )}
 
         <div className="row" style={{ marginTop: 16, gap: 18, flexWrap: 'wrap' }}>
           <div style={{ minWidth: 200, flex: 1 }}>

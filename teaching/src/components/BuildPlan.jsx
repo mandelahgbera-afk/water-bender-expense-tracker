@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { BUILD_PHASES } from '../data/buildPlan.js'
+import { PROJECT_BLUEPRINT } from '../data/projectBlueprint.js'
 import { CheckAnim, GearAnim } from './LottieStyleSVG.jsx'
 
 export default function BuildPlan() {
@@ -7,7 +8,14 @@ export default function BuildPlan() {
 
   return (
     <div>
-      <h2 style={{ marginTop: 0, fontSize: 20, marginBottom: 14 }}>🔨 Build Plan — Phased Implementation</h2>
+      <div className="row" style={{ justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
+        <h2 style={{ margin: 0, fontSize: 20 }}>🔨 Build Plan — Phased Implementation</h2>
+        {PROJECT_BLUEPRINT.repoUrl && (
+          <a className="btn btn-primary btn-sm" href={PROJECT_BLUEPRINT.repoUrl} target="_blank" rel="noopener noreferrer">
+            🐙 View on GitHub
+          </a>
+        )}
+      </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {BUILD_PHASES.map(phase => {
           const isOpen = expanded === phase.id

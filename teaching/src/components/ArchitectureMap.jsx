@@ -53,8 +53,15 @@ export default function ArchitectureMap() {
     <div>
       <div className="row" style={{ justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
         <h2 style={{ margin: 0, fontSize: 20 }}>🏗️ Project Architecture</h2>
-        <input className="field" style={{ maxWidth: 320 }} placeholder="🔍 Filter files (e.g. auth, csv, backup)…"
-          value={filter} onChange={e => setFilter(e.target.value)} />
+        <div className="row" style={{ gap: 8 }}>
+          {PROJECT_BLUEPRINT.repoUrl && (
+            <a className="btn btn-primary btn-sm" href={PROJECT_BLUEPRINT.repoUrl} target="_blank" rel="noopener noreferrer">
+              🐙 Open Expense Tracker on GitHub
+            </a>
+          )}
+          <input className="field" style={{ maxWidth: 320 }} placeholder="🔍 Filter files (e.g. auth, csv, backup)…"
+            value={filter} onChange={e => setFilter(e.target.value)} />
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 14 }}>
