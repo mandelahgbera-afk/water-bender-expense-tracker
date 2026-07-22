@@ -1,99 +1,137 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import CodeBlock from './CodeBlock.jsx'
 import { DropAnim, CheckAnim } from './LottieStyleSVG.jsx'
 import { useToast } from './ToastProvider.jsx'
 
-// ConceptCard: micro-teaching unit with states + substates.
-// States: idle -> active (expanded) -> learned (marked).
-// Interactions: click to expand, cursor-follow glow, "Mark learned" toggle, quiz.
+const STATE_CONFIG = {
+  new:      { dot: 'state-new',      label: 'New',      icon: DropAnim },
+  active:   { dot: 'state-active',   label: 'Studying', icon: DropAnim },
+  learned:  { dot: 'state-learned',  label: 'Learned',  icon: CheckAnim }
+}
+
 export default function ConceptCard({ concept, state, onSetState }) {
-  const [mx, setMx] = useState(50)
-  const [my, setMy] = useState(0)
   const [quizOpen, setQuizOpen] = useState(false)
   const [picked, setPicked] = useState(null)
   const toast = useToast()
 
-  const isActive = state === 'active'
+  const cfg = STATE_CONFIG[state] || STATE_CONFIG.new
+  const IconComp = cfg.icon
   const isLearned = state === 'learned'
+  const isActive = state === 'active'
 
-  function onClick() {
+  const handleCardClick = useCallback(() => {
     if (isLearned) return
     onSetState(isActive ? 'new' : 'active')
-  }
+  }, [isLearned, isActive, onSetState])
 
-  function markLearned(e) {
+  const handleMarkLearned = useCallback((e) => {
     e.stopPropagation()
-    onSetState(isLearned ? 'active' : 'learned')
-    if (!isLearned) toast(`Mastered: ${concept.title} 🌊`)
-  }
+    const next = isLearned ? 'active' : 'learned'
+    onSetState(next)
+    if (!isLearned) toast(`Mastered: ${concept.title}`)
+  }, [isLearned, onSetState, toast, concept.title])
 
-  function answer(i, e) {
+  const handleAnswer = useCallback((i, e) => {
     e.stopPropagation()
     setPicked(i)
-    if (i === concept.quiz.answer) toast('Correct! Water flows clearly now 💧')
-  }
+    if (i === concept.quiz.answer) toast('Correct! 💧')
+  }, [concept.quiz.answer, toast])
+
+  // Stable cursor tracking — update CSS vars directly to avoid re-render cascade
+  const handleMouseMove = useCallback((e) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - r.left) / r.width) * 100
+    const y = ((e.clientY - r.top) / r.height) * 100
+    e.currentTarget.style.setProperty('--mx', `${x}%`)
+    e.currentTarget.style.setProperty('--my', `${y}%`)
+  }, [])
 
   return (
     <div
-      className={`card concept fade-up ${isActive ? 'is-active' : ''}`}
-      style={{ '--mx': `${mx}%`, '--my': `${my}%` }}
-      onClick={onClick}
-      onMouseMove={e => {
-        const r = e.currentTarget.getBoundingClientRect()
-        setMx(((e.clientX - r.left) / r.width) * 100)
-        setMy(((e.clientY - r.top) / r.height) * 100)
-      }}
+      className={`card concept ${isActive ? 'is-active' : ''}`}
+      onClick={handleCardClick}
+      onMouseMove={handleMouseMove}
     >
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <div className="row">
-          <div style={{ fontSize: 28 }}>{concept.icon}</div>
+          <span style={{ fontSize: 28 }}>{concept.icon}</span>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 16 }}>{concept.title}</div>
-            <div className="tag" style={{ marginTop: 4 }}><span className="water-ico">🌊</span> {concept.analogy}</div>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>{concept.title}</div>
+            <div className="tag" style={{ marginTop: 4 }}>
+              <span className="water-ico">🌊</span> {concept.analogy}
+            </div>
           </div>
         </div>
-        <span className={`state-dot ${isLearned ? 'state-learned' : isActive ? 'state-active' : 'state-new'}`} title={isLearned ? 'Learned' : isActive ? 'Studying' : 'New'} />
+        <span
+          className={`state-dot ${cfg.dot}`}
+          title={cfg.label}
+          aria-label={cfg.label}
+        />
       </div>
 
-      <p className="muted" style={{ margin: 0, fontSize: 13.5, lineHeight: 1.5 }}>{concept.blurb}</p>
+      <p className="muted" style={{ margin: 0, fontSize: 13.5, lineHeight: 1.55 }}>
+        {concept.blurb}
+      </p>
 
-      {isActive && (
-        <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <CodeBlock code={concept.code} />
-          <div style={{ fontSize: 12.5, color: 'var(--accent-2)' }}>
-            <strong>⚙️ In the project:</strong> {concept.project}
-          </div>
+      <div style={{ marginTop: 12 }}>
+        <details open={isActive}>
+          <summary className="sr-only">Toggle {concept.title} details</summary>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <CodeBlock code={concept.code} />
+            <p style={{ fontSize: 12.5, color: 'var(--accent-2)', margin: 0 }}>
+              <strong>⚙️ In the project:</strong> {concept.project}
+            </p>
 
-          <button className="quiz-opt" onClick={(e) => { e.stopPropagation(); setQuizOpen(o => !o) }}>
-            🧪 {quizOpen ? 'Hide' : 'Try a'} quick-check question
-          </button>
-
-          {quizOpen && (
-            <div className="fade-up" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <div style={{ fontSize: 13.5 }}>{concept.quiz.q}</div>
-              {concept.quiz.options.map((opt, i) => (
-                <div
-                  key={i}
-                  className={`quiz-opt ${picked === i ? (i === concept.quiz.answer ? 'correct' : 'wrong') : ''}`}
-                  onClick={(e) => answer(i, e)}
-                >
-                  {opt}
-                </div>
-              ))}
-              {picked === concept.quiz.answer && (
-                <div className="good" style={{ fontSize: 12.5 }}>✓ {concept.quiz.explain}</div>
-              )}
-            </div>
-          )}
-
-          <div className="row" style={{ justifyContent: 'space-between' }}>
-            <span className="tag">{isLearned ? <CheckAnim size={18} /> : <DropAnim size={20} />} {isLearned ? 'Learned' : 'Studying'}</span>
-            <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: 12 }} onClick={markLearned}>
-              {isLearned ? '↺ Review' : '✓ Mark learned'}
+            <button
+              className="quiz-trigger"
+              onClick={(e) => { e.stopPropagation(); setQuizOpen(o => !o) }}
+              aria-expanded={quizOpen}
+            >
+              🧪 {quizOpen ? 'Hide' : 'Try a'} quick-check question
             </button>
+
+            {quizOpen && (
+              <div className="quiz-panel">
+                <p style={{ margin: '0 0 8px', fontSize: 13.5 }}>{concept.quiz.q}</p>
+                {concept.quiz.options.map((opt, i) => {
+                  const isCorrect = i === concept.quiz.answer
+                  const isWrongPick = picked === i && !isCorrect
+                  const isRightPick = picked === i && isCorrect
+                  return (
+                    <button
+                      key={i}
+                      className={`quiz-opt ${isRightPick ? 'correct' : ''} ${isWrongPick ? 'wrong' : ''}`}
+                      onClick={(e) => handleAnswer(i, e)}
+                      disabled={picked !== null}
+                    >
+                      {opt}
+                      {isRightPick && <span className="quiz-check"> ✓</span>}
+                    </button>
+                  )
+                })}
+                {picked === concept.quiz.answer && (
+                  <p className="good" style={{ fontSize: 12.5, margin: '8px 0 0' }}>
+                    {concept.quiz.explain}
+                  </p>
+                )}
+              </div>
+            )}
+
+            <div className="row" style={{ justifyContent: 'space-between', marginTop: 4 }}>
+              <span className="tag">
+                <IconComp size={16} /> {cfg.label}
+              </span>
+              <button
+                className="btn btn-ghost"
+                style={{ padding: '6px 12px', fontSize: 12 }}
+                onClick={handleMarkLearned}
+              >
+                {isLearned ? '↺ Review' : '✓ Mark learned'}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
+        </details>
+      </div>
     </div>
   )
 }

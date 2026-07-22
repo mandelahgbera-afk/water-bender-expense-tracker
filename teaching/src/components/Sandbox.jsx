@@ -1,9 +1,7 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useToast } from './ToastProvider.jsx'
 import { DropAnim } from './LottieStyleSVG.jsx'
 
-// Sandbox: a practical, safe "try it" area. Not a real Python eval —
-// it checks the learner's expression against expected water values via a tiny evaluator.
 const EXERCISES = [
   {
     id: 'e1',
@@ -36,27 +34,34 @@ export default function Sandbox() {
 
   const ex = EXERCISES[current]
 
-  function run() {
+  const run = useCallback(() => {
     const pass = ex.check(code)
     setResults(r => ({ ...r, [ex.id]: pass }))
-    if (pass) {
-      toast('Flow correct! 🌊')
-    } else {
-      toast('Not quite — adjust your valves')
-    }
-  }
+    toast(pass ? 'Flow correct! 🌊' : 'Not quite — adjust your valves')
+  }, [ex, code, toast])
 
-  function next() {
-    if (current < EXERCISES.length - 1) setCurrent(current + 1)
-    else { toast('All exercises complete! 🏆'); setCurrent(0) }
+  const next = useCallback(() => {
+    if (current < EXERCISES.length - 1) {
+      setCurrent(i => i + 1)
+    } else {
+      toast('All exercises complete! 🏆')
+      setCurrent(0)
+    }
     setCode('')
-  }
+  }, [current, toast])
+
+  const jumpTo = useCallback((i) => {
+    setCurrent(i)
+    setCode('')
+  }, [])
 
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <h2 style={{ margin: 0, fontSize: 20 }}>🧪 Practical Sandbox</h2>
-        <span className="tag"><DropAnim size={22} /> Exercise {current + 1}/{EXERCISES.length}</span>
+        <span className="tag">
+          <DropAnim size={22} /> Exercise {current + 1}/{EXERCISES.length}
+        </span>
       </div>
 
       <p className="muted" style={{ margin: 0 }}>
@@ -68,7 +73,9 @@ export default function Sandbox() {
         <div className="prompt">$ hint: {ex.hint}</div>
       </div>
 
+      <label className="sr-only" htmlFor="sandbox-input">Python code</label>
       <textarea
+        id="sandbox-input"
         className="field"
         rows={3}
         placeholder="Type your Python here…"
@@ -77,24 +84,33 @@ export default function Sandbox() {
         style={{ fontFamily: 'monospace', resize: 'vertical' }}
       />
 
-      <div className="row" style={{ gap: 10 }}>
+      <div className="row" style={{ gap: 10, alignItems: 'center' }}>
         <button className="btn btn-primary" onClick={run}>▶ Run flow</button>
         <button className="btn" onClick={next}>Next exercise →</button>
-        {results[ex.id] && (
-          <span className={results[ex.id] ? 'good' : 'bad'}>
+        {results[ex.id] !== undefined && (
+          <span className={`status-pill ${results[ex.id] ? 'good' : 'bad'}`}>
             {results[ex.id] ? `✓ ${ex.ok}` : '✗ check your syntax'}
           </span>
         )}
       </div>
 
-      <div className="row" style={{ flexWrap: 'wrap', gap: 8 }}>
-        {EXERCISES.map((e, i) => (
-          <span key={e.id} className="tag" style={{ borderColor: results[e.id] ? 'var(--good)' : 'var(--line)', color: results[e.id] ? 'var(--good)' : 'var(--muted)' }}
-            onClick={() => { setCurrent(i); setCode('') }} style={{ cursor: 'pointer' }}>
-            {results[e.id] ? '✓' : '○'} Ex {i + 1}
-          </span>
-        ))}
-      </div>
+      <nav className="exercise-nav" aria-label="Exercise selector">
+        {EXERCISES.map((e, i) => {
+          const done = results[e.id] === true
+          const failed = results[e.id] === false
+          return (
+            <button
+              key={e.id}
+              className={`exercise-chip ${i === current ? 'active' : ''} ${done ? 'done' : ''} ${failed ? 'failed' : ''}`}
+              onClick={() => jumpTo(i)}
+              aria-pressed={i === current}
+              aria-label={`Exercise ${i + 1}${done ? ', completed' : failed ? ', needs retry' : ''}`}
+            >
+              {done ? '✓' : failed ? '✗' : '○'} Ex {i + 1}
+            </button>
+          )
+        })}
+      </nav>
     </div>
   )
 }

@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useClipboard } from '../hooks/useClipboard.js'
 import { useToast } from './ToastProvider.jsx'
-import { PipeAnim, GearAnim, CheckAnim } from './LottieStyleSVG.jsx'
+import { PipeAnim, GearAnim } from './LottieStyleSVG.jsx'
 
 const FIELD_TYPE_COLOR = {
   string: 'var(--accent)', float: 'var(--good)', date: 'var(--warn)',
@@ -22,7 +22,6 @@ function FieldRow({ field }) {
   )
 }
 
-// FlowStep: process component with states (todo / current / done) + live mini-demo.
 export default function FlowStep({ step, conceptsById, status, onAdvance }) {
   const { copy } = useClipboard()
   const toast = useToast()
@@ -31,39 +30,54 @@ export default function FlowStep({ step, conceptsById, status, onAdvance }) {
   const pseudo = `# ${step.title}\n# (${step.analogy})\n` +
     step.fields.map(f => `${f.name} = <${f.type}>  # ${f.note}`).join('\n')
 
-  function runDemo() {
+  const runDemo = useCallback(() => {
     const names = step.fields.map(f => f.name)
     const sample = {
-      'amount': '120.00', 'spent': '540.00', 'remaining': '460.00',
-      'monthly_budget': '1000.00', 'rate': '1.08', 'converted': '129.60'
+      amount: '120.00', spent: '540.00', remaining: '460.00',
+      monthly_budget: '1000.00', rate: '1.08', converted: '129.60'
     }
     const lines = names.map(n => `${n} → ${sample[n] || '✓ set'}`)
     setDemo(lines)
     toast(`Simulating: ${step.title}`)
-  }
+  }, [step.fields, step.title, toast])
 
   const isDone = status === 'done'
   const isCurrent = status === 'current'
 
+  const nodeClass = [
+    'flow-node',
+    isCurrent ? 'is-current' : '',
+    isDone ? 'is-done' : ''
+  ].filter(Boolean).join(' ')
+
   return (
-    <div className={`flow-node ${isCurrent ? 'is-current' : ''} ${isDone ? 'is-done' : ''}`}>
+    <div className={nodeClass}>
       <div className="row" style={{ justifyContent: 'space-between', marginBottom: 10 }}>
         <div className="row">
-          <div className="flow-step-num">{isDone ? '✓' : step.num}</div>
+          <div className="flow-step-num" aria-label={`Step ${step.num}`}>
+            {isDone ? '✓' : step.num}
+          </div>
           <div>
             <div style={{ fontWeight: 700 }}>{step.title}</div>
-            <div className="tag" style={{ marginTop: 4 }}><span className="water-ico">🔧</span> {step.analogy}</div>
+            <div className="tag" style={{ marginTop: 4 }}>
+              <span className="water-ico">🔧</span> {step.analogy}
+            </div>
           </div>
         </div>
-        <div className="row" style={{ gap: 6 }}>
+        <div className="row" style={{ gap: 6 }} aria-hidden="true">
           {step.id === 'automation' ? <GearAnim size={26} /> : <PipeAnim size={26} active={isDone} />}
         </div>
       </div>
 
-      <p className="muted" style={{ margin: '0 0 10px', fontSize: 13.5, lineHeight: 1.5 }}>{step.summary}</p>
+      <p className="muted" style={{ margin: '0 0 10px', fontSize: 13.5, lineHeight: 1.55 }}>
+        {step.summary}
+      </p>
 
       <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: 1, color: 'var(--muted)', marginBottom: 4 }}>Fields / Valves</div>
+        <div style={{
+          fontSize: 12, textTransform: 'uppercase', letterSpacing: 1,
+          color: 'var(--muted)', marginBottom: 4
+        }}>Fields / Valves</div>
         {step.fields.map((f, i) => <FieldRow key={i} field={f} />)}
       </div>
 
@@ -76,34 +90,44 @@ export default function FlowStep({ step, conceptsById, status, onAdvance }) {
       </div>
 
       {step.code && (
-        <div className="card" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
-          <div className="code-head">
-            <span className="tag"><span className="water-ico">🐍</span> {step.id}.py — real code</span>
-            <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 12 }} onClick={() => copy(step.code)}>
-              ⧉ Copy
-            </button>
-          </div>
-          <pre className="code"><code>{step.code}</code></pre>
+        <div style={{ marginBottom: 12 }}>
+          <CodeBlock code={step.code} label={`${step.id}.py`} />
         </div>
       )}
 
-      <div className="row" style={{ gap: 8 }}>
-        <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: 12 }}
-          onClick={() => { copy(pseudo); toast('Stage pseudo-code copied') }}>
+      <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
+        <button
+          className="btn btn-ghost"
+          style={{ padding: '6px 12px', fontSize: 12 }}
+          onClick={() => { copy(pseudo); toast('Pseudo-code copied') }}
+        >
           ⧉ Copy pseudo-code
         </button>
-        <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: 12 }} onClick={runDemo}>
-          ▶ Run live mini-demo
+        <button
+          className="btn btn-ghost"
+          style={{ padding: '6px 12px', fontSize: 12 }}
+          onClick={runDemo}
+        >
+          ▶ Run mini-demo
         </button>
         {!isDone && (
-          <button className="btn btn-primary" style={{ padding: '6px 12px', fontSize: 12 }} onClick={onAdvance}>
-            ✓ Mark stage done
+          <button
+            className="btn btn-primary"
+            style={{ padding: '6px 12px', fontSize: 12 }}
+            onClick={onAdvance}
+          >
+            ✓ Mark done
           </button>
+        )}
+        {isDone && (
+          <span className="tag good" style={{ borderColor: 'var(--good)', color: 'var(--good)' }}>
+            ✓ Completed
+          </span>
         )}
       </div>
 
       {demo && (
-        <div className="terminal fade-up" style={{ marginTop: 12 }}>
+        <div className="terminal" style={{ marginTop: 12 }}>
           <div className="prompt">$ simulate {step.id}</div>
           {demo.map((l, i) => <div key={i}>  {l}</div>)}
           <div className="prompt">$ done ✓</div>
