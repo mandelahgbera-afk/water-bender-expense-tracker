@@ -1,130 +1,107 @@
-# Water Bender — Expense Tracker (React Teaching Webapp)
+# Expense Tracker & Budget Management System
 
-A modern React webapp that teaches **Python fundamentals** through a consistent
-**water / pipeline / water-bender** analogy, then models the full
-**Expense Tracker & Budget Management System** as a pipeline flow.
+A restaurant-style money management app built with **Python, Flask, SQLite, Jinja2, CSS, and JavaScript**.
 
-> Companion to `WATER_BENDER_PYTHON_GUIDE.md` (the written manual).
+Your teammate can clone this repo and run it in 60 seconds.
 
 ---
 
-## Run it
+## Quick Start
 
 ```bash
-npm install
-npm run dev      # opens http://localhost:5173
-npm run build    # production build into dist/
+# 1. Clone
+git clone https://github.com/mandelahgbera-afk/water-bender-expense-tracker.git
+cd water-bender-expense-tracker
+
+# 2. Install
+pip install -r requirements.txt
+
+# 3. Run
+python app.py
 ```
 
-Stack: **Vite + React 18 + Recharts** (pure CSS, no Tailwind build step, no UI kit).
-
-## Modern / Interactive Features
-
-- **Animated water background** — `WaterBackground.jsx` draws shader-style flowing
-  wave bands + rising bubbles on a `<canvas>` (requestAnimationFrame, DPR-aware).
-- **Lottie-style SVGs** — `LottieStyleSVG.jsx` hand-builds animated drop, gear, pipe,
-  and check icons with CSS/SVG keyframes (no external Lottie runtime).
-- **Micro-interactions** — `RippleButton.jsx` (water-ripple on click),
-  `ToastProvider.jsx` (global feedback toast), cursor-follow glow on concept cards.
-- **Component states & substates**
-  - Concept card: `new → active (expanded) → learned` (mastered), shown via state dots.
-  - Flow step: `todo → current → done`, with animated pipe connectors.
-- **Progress tracking** — live bars for concepts mastered, pipeline stages built, and architecture phases reviewed.
-- **Practical Sandbox** — `Sandbox.jsx` gives safe, execution-free "try-it" exercises
-  that validate the *shape* of the learner's Python.
-- **Live mini-demos** — each flow stage can "Run live mini-demo" to simulate its fields.
-- **Real Python code** — every flow stage now shows concrete, copyable Python code
-  aligned with the actual project file structure.
+Open **http://127.0.0.1:5000**
 
 ---
 
-## The Six Views (Tabs)
+## What's Inside
 
-| Tab | What it teaches | Interactions |
-|---|---|---|
-| **💧 Concepts** | 17 micro-teaching cards, one per concept | Filter, expand, cursor-glow, **learned** substate, in-card quiz |
-| **🔧 Project Flow** | 10 process components building the tracker | Stage states, concrete Python code, live mini-demo, copy |
-| **🏗️ Architecture** | Real Python project file tree | Click to explore files, see concepts per module |
-| **🔨 Build Plan** | 5-phase implementation roadmap | Expand phases, milestones, key files, concept mapping |
-| **🧪 Sandbox** | Practical "try-it" exercises | Safe expression checker, run/next, per-exercise pass state |
-| **📊 Flow Diagram** | Real charts from sample reservoirs | Hover tooltips, animated render |
-
----
-
-## Components
-
-### `ConceptCard` — Micro-Teaching Unit
-Located: `src/components/ConceptCard.jsx`
-Shows, for **one Python concept**:
-- Icon + title + analogy tag
-- Blurb + code block + project tie-in
-- In-card quiz with correct/wrong micro-interactions
-- Substate: `new → active → learned`
-
-### `FlowStep` — Process Component
-Located: `src/components/FlowStep.jsx`
-Represents **one stage** of the project pipeline. Contains:
-- Step number, title, analogy tag, summary
-- **Fields / Valves** (name, colored type, note)
-- Concept chips
-- **Concrete Python code block** — copyable, from `src/data/flow.js`
-- Stage pseudo-code copy + live mini-demo + advance button
-
-### `ArchitectureMap` — Project Blueprint
-Located: `src/components/ArchitectureMap.jsx`
-Interactive file tree of the actual Python project:
-- Grouped by package (`auth/`, `transactions/`, `database/`, etc.)
-- Each file shows: purpose, icon, color, linked Python concepts
-- Click to expand and reveal concept tags
-- Filter by file name or purpose
-
-### `BuildPlan` — Phased Roadmap
-Located: `src/components/BuildPlan.jsx`
-Five build phases, each with:
-- Milestones (bulleted)
-- Key files (modules to create)
-- Python concepts touched (chip tags)
-- Expand/collapse with water-themed animations
-
-### `CodeBlock` — Clipboard Pipe
-Located: `src/components/CodeBlock.jsx`
-Renders a Python snippet with a copy button and toast feedback.
-
-### `ChartsPanel` — Live Flow Diagram
-Located: `src/components/ChartsPanel.jsx`
-Three Recharts visuals: Pie (category), Bar (monthly), Line (income vs expense).
-
-### `App` — Shell
-Located: `src/App.jsx`
-Root orchestrator. State slices: `tab`, `search`, `conceptStates`, `flowDone`, `flowCurrent`, `phasesOpen`.
-Renders 6 tab views. Three progress bars at the top.
-
----
-
-## Data Modules
-
-| File | Purpose |
+| File/Folder | Purpose |
 |---|---|
-| `src/data/concepts.js` | 17 Python concept definitions with analogies, code, quizzes |
-| `src/data/flow.js` | 10 pipeline stage definitions with concrete Python code |
-| `src/data/projectBlueprint.js` | 25-file Python project architecture with purposes |
-| `src/data/buildPlan.js` | 5-phase implementation plan with milestones, files, concepts |
+| `app.py` | Flask routes — dashboard, add/edit/delete transactions, budget CRUD, JSON APIs |
+| `db.py` | SQLite schema + CRUD + analytics (`get_summary`, `get_spending_by_category`) |
+| `templates/` | Jinja2 layouts (`base.html`, `dashboard.html`) |
+| `static/` | CSS (`style.css`) + interactive JS (`app.js`) |
+| `requirements.txt` | Flask>=3.0 |
 
 ---
 
-## Python Concepts Covered
+## Features
 
-Variables · Operators · Conditional Statements · Loops · Functions · Strings ·
-Lists · Dictionaries · File Handling · Exception Handling · JSON · Networking ·
-REST API · Database Connectivity · Data Visualization · Automation ·
-Command Line Arguments
+**Server-side (no JS required):**
+- Add income / expense transactions
+- Delete transactions
+- Set / remove monthly budgets per category
+- Budget progress bars (server-computed: percent, over_budget, remaining)
+- Filter by category + date range
+
+**Interactive (JS-enhanced):**
+- Toast notifications on every action
+- Modal add-transaction (quick-add without leaving dashboard)
+- Inline edit — click Edit on any row, save without reload
+- AJAX delete with smooth row animation
+- Live debounced keyword search
+- Chart.js pie chart (spending by category)
+- Animated budget bars (live-pulse)
+- Ripple buttons on every click
+
+All interactive features degrade gracefully — the app works fully without JavaScript via `<noscript>` fallback forms.
 
 ---
 
-## Next Steps
+## Project Structure (Flattened)
 
-1. Read `WATER_BENDER_PYTHON_GUIDE.md`.
-2. In the webapp, explore **🏗️ Architecture** to see the real file layout.
-3. Walk **🔧 Project Flow** stage-by-stage; copy concrete Python code.
-4. Use **🔨 Build Plan** as your implementation roadmap.
-5. Implement the real Python Expense Tracker (SQLite + requests + matplotlib).
+```
+water-bender-expense-tracker/
+├── app.py                  ← Flask routes (5 stations + 3 JSON APIs)
+├── db.py                   ← SQLite walk-in pantry (schema + CRUD + tallies)
+├── requirements.txt        ← Flask>=3.0
+├── static/
+│   ├── app.js              ← Interactive foundation (toast, modal, inline edit, live filter, charts)
+│   └── style.css           ← Plating + micro-interactions (ripple, modal, toast, row animations)
+├── templates/
+│   ├── base.html           ← Menu layout shell
+│   └── dashboard.html      ← Main dining room (cards, progress, forms, table, chart)
+├── teaching/               ← React teaching webapp (optional, for learning)
+└── README.md               ← You are here
+```
+
+---
+
+## Teaching Webapp (Optional)
+
+The `teaching/` folder contains a separate React + Vite webapp that explains the Python concepts and project architecture with interactive diagrams, quizzes, and a live flow visualization.
+
+```bash
+cd teaching
+npm install
+npm run dev
+```
+
+---
+
+## Deployment
+
+**Flask app** — deploy to Render, Railway, Fly.io, or any Python host:
+```bash
+# On Render: set build command to `pip install -r requirements.txt`
+# Set start command to `gunicorn app:app` (install gunicorn first)
+```
+
+**Teaching webapp** — already live on Vercel (import the `teaching/` subfolder as a separate project).
+
+---
+
+## License
+
+MIT — free to use, modify, and share.
